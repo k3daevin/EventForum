@@ -1,0 +1,19 @@
+﻿@using EventForum.Shared.Aggregates.Beitrag.ValueObjects;
+<table style="border-block: dashed">
+    <tr>
+        <td>Betreff:</td>
+        <td><input type="text" @bind="KommentarData.Betreff" /></td>
+    </tr>
+    <tr>
+        <td>Name:</td>
+        <td><input type="text" @bind="KommentarData.Name" /></td>
+    </tr>
+    <tr>
+        <td>Inhalt:</td>
+        <td><input type="text" @bind="KommentarData.Inhalt" /></td>
+    </tr>
+</table>
+@code {
+    [Parameter]
+    public KommentarData KommentarData { get; set; }
+}

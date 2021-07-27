@@ -1,0 +1,23 @@
+﻿@using EventForum.Shared.Aggregates.Beitrag.ReadModels;
+<table style="border-block: dashed">
+    <tr>
+        <td>Betreff:</td>
+        <td>@SimpleKommentarData.Betreff</td>
+    </tr>
+    <tr>
+        <td>Name:</td>
+        <td>@SimpleKommentarData.Name</td>
+    </tr>
+    <tr>
+        <td>Erstellt:</td>
+        <td>@SimpleKommentarData.Erstellt</td>
+    </tr>
+    <tr>
+        <td>Inhalt:</td>
+        <td>@SimpleKommentarData.Inhalt</td>
+    </tr>
+</table>
+@code {
+    [Parameter]
+    public SimpleKommentarData SimpleKommentarData { get; set; }
+}

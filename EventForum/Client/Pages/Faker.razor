@@ -1,0 +1,37 @@
+﻿@page "/faker"
+@inject EventForum.Shared.Faker.KommentarFaker KommentarFaker
+@inject HttpClient Http
+@using EventForum.Shared.CommandModels
+<h3>Faker</h3>
+
+<p>Anzahl Kommentare</p>
+<input type="number" @bind="number"/>
+<button @onclick="Generate">Generieren!</button>
+@if (beitragId != null)
+{
+    <NavLink class="nav-link" href="@($"/beitrag/{beitragId}")">
+        @beitragId
+    </NavLink>
+}
+
+
+@code {
+    int number = 10;
+    string beitragId = null;
+
+    private async Task Generate()
+    {
+        if (number > 0)
+        {
+            var kommentarDatas = KommentarFaker.Generate(number).ToList();
+
+            var response = await Http.PostAsJsonAsync("api/command/beitrag", kommentarDatas[0]);
+            var result = await response.Content.ReadFromJsonAsync<ResponseWithBeitragId>();
+            beitragId = result.BeitragId;
+            foreach (var kommentarData in kommentarDatas.Skip(1))
+            {
+                response = await Http.PostAsJsonAsync($"api/command/beitrag/{beitragId}", kommentarData);
+            }
+        }
+    }
+}

@@ -1,0 +1,39 @@
+﻿@page "/vorschau"
+@using EventForum.Shared.Aggregates.Beitrag.ReadModels;
+@inject HttpClient Http
+
+<h3>Vorschau</h3>
+
+@if (vorschauReadModels == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    @foreach (var vorschauReadModel in vorschauReadModels)
+    {
+        <p>
+            <NavLink class="nav-link" href="@($"/beitrag/{vorschauReadModel.Beitrag.BeitragId}")">
+                @vorschauReadModel.Beitrag.BeitragId
+            </NavLink>
+
+            @foreach (var kommentarData in vorschauReadModel.Beitrag.Kommentare)
+            {
+                <Kommentar SimpleKommentarData="kommentarData" />
+            }
+        </p>
+    }
+}
+
+@code {
+    public int begin { get; set; } = 0;
+
+    public int size { get; set; } = 10;
+
+    List<VorschauReadModel> vorschauReadModels = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        vorschauReadModels = await Http.GetFromJsonAsync<List<VorschauReadModel>>($"api/query/vorschau?begin={begin}&size={size}");
+    }
+}

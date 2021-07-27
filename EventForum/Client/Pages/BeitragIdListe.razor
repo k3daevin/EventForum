@@ -1,0 +1,28 @@
+﻿@page "/beitragIdListe"
+@inject HttpClient Http
+
+<h3>BeitragIdListe</h3>
+
+@if (beitragIds == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    @foreach (var beitragId in beitragIds)
+    {
+
+        <NavLink class="nav-link" href="@($"/beitrag/{beitragId}")">
+            @beitragId
+        </NavLink>
+
+    }
+}
+@code {
+    private List<string> beitragIds = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        beitragIds = await Http.GetFromJsonAsync<List<string>>($"api/query/all");
+    }
+}

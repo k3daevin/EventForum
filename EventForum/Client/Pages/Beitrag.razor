@@ -1,0 +1,78 @@
+﻿@page "/beitrag/{beitragId}"
+@using Microsoft.AspNetCore.SignalR.Client
+@inject HubConnection HubConnection
+@inject HttpClient Http
+@inject EventForum.Shared.Faker.KommentarFaker KommentarFaker
+@implements IAsyncDisposable
+@using EventForum.Shared.Aggregates.Beitrag.ReadModels;
+@using EventForum.Shared.Aggregates.Beitrag.ValueObjects;
+
+
+
+@if (beitragReadModel == null)
+{
+    <h3>Beitrag</h3>
+    <p>Loading...</p>
+}
+else
+{
+    <h3>@beitragReadModel.Beitrag.Kommentare.First().Betreff</h3>
+    <div>
+        <h6>Neuer Kommentar</h6>
+        <EditKommentar KommentarData="@kommentarData" />
+        <button @onclick="Senden">Senden</button>
+        <button @onclick="FakeDaten">Generiere Fake-Daten</button>
+    </div>
+    @foreach (var kommentar in beitragReadModel.Beitrag.Kommentare)
+    {
+        <Kommentar SimpleKommentarData="kommentar" />
+    }
+}
+
+@code {
+    [Parameter]
+    public string beitragId { get; set; }
+
+    private BeitragReadModel beitragReadModel = null;
+
+    private KommentarData kommentarData = new KommentarData();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBeitraege();
+
+        await HubConnection.InvokeAsync("JoinBeitragGroup", beitragId);
+
+        HubConnection.On("KommentarHinzugefuegt", () =>
+        {
+            LoadBeitraege().Wait();
+            StateHasChanged();
+        });
+    }
+
+    private void FakeDaten()
+    {
+        kommentarData = KommentarFaker.Generate(1).First();
+    }
+
+    private async Task Senden()
+    {
+        kommentarData.MetaInfo = new KommentarMetaInfo { UserId = "magicUserId" };
+        var response = await Http.PostAsJsonAsync($"api/command/beitrag/{beitragId}", kommentarData);
+        kommentarData = new KommentarData();
+        await LoadBeitraege();
+    }
+
+    private async Task LoadBeitraege()
+    {
+        var cacheHack = Guid.NewGuid().ToString("N");
+        beitragReadModel = await Http.GetFromJsonAsync<BeitragReadModel>($"api/query/{beitragId}/{cacheHack}");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        HubConnection.Remove("KommentarHinzugefuegt");
+        // TODO: error handling, for example when not connected to the server
+        await HubConnection.InvokeAsync("LeaveBeitragGroup", beitragId);
+    }
+}

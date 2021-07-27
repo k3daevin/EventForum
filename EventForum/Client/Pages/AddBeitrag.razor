@@ -1,0 +1,22 @@
+﻿@page "/addBeitrag"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@using EventForum.Shared.Aggregates.Beitrag.ValueObjects
+@using EventForum.Shared.Aggregates.Beitrag.ReadModels
+@using EventForum.Shared.CommandModels
+<h3>AddBeitrag</h3>
+
+<EditKommentar KommentarData="@kommentarData" />
+<button @onclick="Senden">Senden</button>
+
+@code {
+    private KommentarData kommentarData = new KommentarData();
+
+    private async Task Senden()
+    {
+        kommentarData.MetaInfo = new KommentarMetaInfo { UserId = "magicUserId" };
+        var response = await Http.PostAsJsonAsync("api/command/beitrag", kommentarData);
+        var result = await response.Content.ReadFromJsonAsync<ResponseWithBeitragId>();
+        Navigation.NavigateTo($"/beitrag/{result.BeitragId}");
+    }
+}
